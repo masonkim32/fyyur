@@ -1,4 +1,7 @@
 babel
+psycopg2-binary
 python-dateutil==2.6.0
+flask
+flask-migrate
 flask-moment
 flask-wtf
