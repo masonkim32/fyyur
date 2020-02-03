@@ -107,7 +107,11 @@ app.jinja_env.filters['datetime'] = format_datetime
 
 @app.route('/')
 def index():
-    return render_template('pages/home.html')
+    return render_template(
+        'pages/home.html',
+        artists=Artist.query.order_by('id').limit(10).all(),
+        venues=Venue.query.order_by('id').limit(10).all()
+    )
 
 
 #  Venues
