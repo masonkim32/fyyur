@@ -2,18 +2,18 @@
 # Imports
 # ---------------------------------------------------------------------------#
 
-import json
+# import json
 from datetime import datetime
 import dateutil.parser
 import babel
-from flask import (Flask, render_template, request, Response,
-                   flash, redirect, url_for)
+from flask import (Flask, render_template, request, flash, jsonify,
+                   redirect, url_for)
 from flask_moment import Moment
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 import logging
 from logging import Formatter, FileHandler
-from flask_wtf import Form
+# from flask_wtf import Form
 from forms import ArtistForm, ShowForm, VenueForm
 
 
@@ -118,7 +118,7 @@ def venues():
     data = []
     cities_with_venues = db.session.query(
         Venue.city, Venue.state).group_by(Venue.city, Venue.state).all()
-    for (city, state) in cities_with_venues:
+    for city, state in cities_with_venues:
         venues = Venue.query.filter_by(city=city, state=state).all()
         venues_by_city = {
             "city": city,
@@ -148,7 +148,6 @@ def search_venues():
 @app.route('/venues/<int:venue_id>')
 def show_venue(venue_id):
     """shows the venue page with the given venue_id"""
-
     venue = Venue.query.get(venue_id)
 
     upcoming_shows = []
@@ -166,9 +165,9 @@ def show_venue(venue_id):
             })
         else:
             upcoming_shows.append({
-                "artist_id": venue.id,
-                "artist_name": venue.name,
-                "artist_image_link": venue.image_link,
+                "artist_id": artist.id,
+                "artist_name": artist.name,
+                "artist_image_link": artist.image_link,
                 "start_time": str(start_time),
             })
 
@@ -217,8 +216,8 @@ def create_venue_submission():
             website=request.form['website'],
             facebook_link=request.form['facebook_link'],
             image_link=request.form['image_link'],
-            # seeking_talent=request.form['seeking_talent'],
-            # seeking_description=request.form['seeking_description'],
+            seeking_talent=int(request.form['seeking_talent']),
+            seeking_description=request.form['seeking_description'],
         )
         db.session.add(new_venue)
         db.session.commit()
@@ -239,14 +238,27 @@ def create_venue_submission():
     return render_template('pages/home.html')
 
 
-@app.route('/venues/<venue_id>', methods=['DELETE'])
+@app.route('/venues/<int:venue_id>', methods=['DELETE'])
 def delete_venue(venue_id):
-    # TODO: Complete this endpoint for taking a venue_id, and using
-    # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
+    error = False
+    try:
+        venue_name = Venue.query.get(venue_id).name
+        Venue.query.filter_by(id=venue_id).delete()
+        db.session.commit()
+    except:
+        error = True
+        db.session.rollback()
+    finally:
+        db.session.close()
 
-    # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
-    # clicking that button delete it from the db then redirect the user to the homepage
-    return None
+    if error:
+        # on unsuccessful db insert, flash an error instead.
+        flash('An error occurred. Venue ' + venue_name
+              + ' could not be deleted.')
+    else:
+        # on successful db insert, flash success
+        flash('Venue ' + venue_name + ' was successfully deleted!')
+        return jsonify({'success': True})
 
 
 #  Artists
@@ -347,9 +359,8 @@ def edit_artist_submission(artist_id):
         artist.website = request.form['website']
         artist.facebook_link = request.form['facebook_link']
         artist.image_link = request.form['image_link']
-        # artist.seeking_venue = request.form['seeking_venue']
-        # artist.seeking_description = request.form['seeking_description']
-
+        artist.seeking_venue = int(request.form['seeking_venue'])
+        artist.seeking_description = request.form['seeking_description']
         db.session.commit()
     except:
         error = True
@@ -389,9 +400,8 @@ def edit_venue_submission(venue_id):
         venue.website = request.form['website']
         venue.facebook_link = request.form['facebook_link']
         venue.image_link = request.form['image_link']
-        # venue.seeking_talent = request.form['seeking_talent']
-        # venue.seeking_description = request.form['seeking_description']
-
+        venue.seeking_talent = int(request.form['seeking_talent'])
+        venue.seeking_description = request.form['seeking_description']
         db.session.commit()
     except:
         error = True
@@ -423,6 +433,7 @@ def create_artist_form():
 def create_artist_submission():
     error = False
     try:
+        print('aaa')
         new_artist = Artist(
             name=request.form['name'],
             city=request.form['city'],
@@ -432,8 +443,8 @@ def create_artist_submission():
             website=request.form['website'],
             facebook_link=request.form['facebook_link'],
             image_link=request.form['image_link'],
-            # seeking_venue=request.form['seeking_venue'],
-            # seeking_description=request.form['seeking_description']
+            seeking_venue=int(request.form['seeking_venue']),
+            seeking_description=request.form['seeking_description']
         )
         db.session.add(new_artist)
         db.session.commit()
