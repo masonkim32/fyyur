@@ -74,12 +74,12 @@ class Show(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     artist_id = db.Column(
         db.Integer,
-        db.ForeignKey('artists.id'),
+        db.ForeignKey('artists.id', ondelete="CASCADE"),
         nullable=False
     )
     venue_id = db.Column(
         db.Integer,
-        db.ForeignKey('venues.id'),
+        db.ForeignKey('venues.id', ondelete="CASCADE"),
         nullable=False
     )
     start_time = db.Column(db.DateTime, nullable=False)
@@ -246,8 +246,13 @@ def create_venue_submission():
 def delete_venue(venue_id):
     error = False
     try:
+        print('aaa')
+        print("venue_id: ", venue_id)
         venue_name = Venue.query.get(venue_id).name
+        print('bbb')
+        print("venue_name: ", venue_name)
         Venue.query.filter_by(id=venue_id).delete()
+        print('ccc')
         db.session.commit()
     except:
         error = True
@@ -259,6 +264,7 @@ def delete_venue(venue_id):
         # on unsuccessful db insert, flash an error instead.
         flash('An error occurred. Venue ' + venue_name
               + ' could not be deleted.')
+        return jsonify({'success': False})
     else:
         # on successful db insert, flash success
         flash('Venue ' + venue_name + ' was successfully deleted!')
