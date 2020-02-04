@@ -89,7 +89,7 @@ class VenueForm(Form):
         'phone'
     )
     image_link = StringField(
-        'image_link', validators=[URL()]
+        'image_link', validators=[URL(message='Must be a valid URL')]
     )
     genres = SelectMultipleField(
         # TODO implement enum restriction
@@ -117,10 +117,10 @@ class VenueForm(Form):
         ]
     )
     website = StringField(
-        'website', validators=[URL()]
+        'website', validators=[URL(message='Must be a valid URL')]
     )
     facebook_link = StringField(
-        'facebook_link', validators=[URL()]
+        'facebook_link', validators=[URL(message='Must be a valid URL')]
     )
     seeking_talent = RadioField(
         'seeking_talent',
@@ -204,7 +204,7 @@ class ArtistForm(Form):
         'phone'
     )
     image_link = StringField(
-        'image_link', validators=[URL()]
+        'image_link', validators=[URL(message='Must be a valid URL')]
     )
     genres = SelectMultipleField(
         # TODO implement enum restriction
@@ -233,11 +233,11 @@ class ArtistForm(Form):
     )
     facebook_link = StringField(
         # TODO implement enum restriction
-        'facebook_link', validators=[URL()]
+        'facebook_link', validators=[URL(message='Must be a valid URL')]
     )
     website = StringField(
         # TODO implement enum restriction
-        'website', validators=[URL()]
+        'website', validators=[URL(message='Must be a valid URL')]
     )
     seeking_venue = RadioField(
         'seeking_venue',
@@ -249,5 +249,5 @@ class ArtistForm(Form):
     )
     seeking_description = StringField(
         # TODO implement enum restriction
-        'seeking_description'
+        'seeking_description',
     )
